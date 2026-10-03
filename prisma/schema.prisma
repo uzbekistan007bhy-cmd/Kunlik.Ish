@@ -27,98 +27,32 @@ enum PaymentType {
 }
 
 model User {
-  id              String             @id @default(uuid())
-  phone           String             @unique
-  role            Role               @default(WORKER)
-  isVerified      Boolean            @default(false)
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  id              String         @id @default(uuid())
+  phone           String         @unique
+  role            Role           @default(WORKER)
+  isVerified      Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
   workerProfile   WorkerProfile?
   employerProfile EmployerProfile?
   jobs            Job[]
   applications    Application[]
-  reviewsGiven    Review[]           @relation("ReviewsGiven")
-  reviewsReceived Review[]           @relation("ReviewsReceived")
+  reviewsGiven    Review[]       @relation("ReviewsGiven")
+  reviewsReceived Review[]       @relation("ReviewsReceived")
   notifications   Notification[]
   savedJobs       SavedJob[]
-reportsGiven    Report[] @relation("UserReportsGiven")
-reportsReceived Report[] @relation("UserReportsReceived")
+  reportsGiven    Report[]       @relation("UserReportsGiven")
+  reportsReceived Report[]       @relation("UserReportsReceived")
+
   @@index([phone])
 }
 
 model Job {
-  id           String        @id @default(uuid())
-  title        String
-  description  String
-  payment      Float
-  paymentType  PaymentType
-  status       String        @default("OPEN")
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  employerId   String
-  employer     User          @relation(fields: [employerId], references: [id], onDelete: Cascade)
-  applications Application[]
-  savedJobs    SavedJob[]
-}
-
-model WorkerProfile {
-  id     String @id @default(uuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model EmployerProfile {
-  id     String @id @default(uuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Application {
-  id        String            @id @default(uuid())
-  jobId     String
-  job       Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status    ApplicationStatus @default(PENDING)
-  createdAt DateTime          @default(now())
-}
-
-model SavedJob {
-  id     String @id @default(uuid())
-  jobId  String
-  job    Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Review {
   id          String   @id @default(uuid())
-  rating      Int
-  comment     String?
-  giverId     String
-  giver       User     @relation("ReviewsGiven", fields: [giverId], references: [id], onDelete: Cascade)
-  receiverId  String
-  receiver    User     @relation("ReviewsReceived", fields: [receiverId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
+  title       String
+  description String
 }
 
-model Notification {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  message   String
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-}
-
-model Report {
-  id         String   @id @default(uuid())
-  reporterId String
-  reporter   User     @relation("ReviewsGiven", fields: [reporterId], references: [id], onDelete: Cascade)
-  targetId   String
-  reason     String
-  createdAt  DateTime @default(now())
-}
 model Report {
   id          String   @id @default(uuid())
   reporterId  String
