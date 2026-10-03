@@ -35,7 +35,7 @@ model User {
   updatedAt       DateTime         @updatedAt
   workerProfile   WorkerProfile?
   employerProfile EmployerProfile?
-  jobs            Job[]
+  jobs            Job[]            @relation("EmployerJobs")
   applications    Application[]
   reviewsGiven    Review[]         @relation("ReviewsGiven")
   reviewsReceived Review[]         @relation("ReviewsReceived")
@@ -71,7 +71,7 @@ model Job {
   title        String
   description  String
   employerId   String
-  employer     User          @relation(fields: [employerId], references: [id], onDelete: Cascade)
+  employer     User          @relation("EmployerJobs", fields: [employerId], references: [id], onDelete: Cascade)
   applications Application[]
   savedJobs    SavedJob[]
   createdAt    DateTime      @default(now())
