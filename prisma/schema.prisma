@@ -41,8 +41,8 @@ model User {
   reviewsReceived Review[]           @relation("ReviewsReceived")
   notifications   Notification[]
   savedJobs       SavedJob[]
-  reportsGiven    Report[]           @relation("ReportsGiven")
-  reportsReceived Report[]           @relation("ReportsReceived")
+reportsGiven    Report[] @relation("UserReportsGiven")
+reportsReceived Report[] @relation("UserReportsReceived")
 
   @@index([phone])
 }
@@ -119,4 +119,16 @@ model Report {
   targetId   String
   reason     String
   createdAt  DateTime @default(now())
+}
+model Report {
+  id          String   @id @default(uuid())
+  reporterId  String
+  reporter    User     @relation("UserReportsGiven", fields: [reporterId], references: [id], onDelete: Cascade)
+  
+  targetId    String
+  target      User     @relation("UserReportsReceived", fields: [targetId], references: [id], onDelete: Cascade)
+
+  reason      String
+  details     String?
+  createdAt   DateTime @default(now())
 }
