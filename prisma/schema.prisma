@@ -52,13 +52,13 @@ model Job {
   title       String
   description String
 }
+
 model Review {
-  id          String   @id @default(uuid())
-  authorId    String
-  author      User     @relation("ReviewsGiven", fields: [authorId], references: [id], onDelete: Cascade)
-  
-  receiverId  String
-  receiver    User     @relation("ReviewsReceived", fields: [receiverId], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid())
+  authorId   String
+  author     User     @relation("ReviewsGiven", fields: [authorId], references: [id], onDelete: Cascade)
+  receiverId String
+  receiver   User     @relation("ReviewsReceived", fields: [receiverId], references: [id], onDelete: Cascade)
 }
 
 model Report {
