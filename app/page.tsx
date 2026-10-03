@@ -1,149 +1,178 @@
-'use client';
+import Header from '@/components/Header';
+import Hero from '@/components/Hero';
+import JobCard from '@/components/JobCard';
+import CategoryCard from '@/components/CategoryCard';
+import HowItWorks from '@/components/HowItWorks';
+import TrustSection from '@/components/TrustSection';
+import Footer from '@/components/Footer';
+import Link from 'next/link';
 
-import { useState } from 'react';
+// Mock Data (Real loyihada Neon PostgreSQL / Prisma bazasidan keladi)
+const urgentJobs = [
+  {
+    id: '1',
+    isUrgent: true,
+    title: 'Omborga yuklarni joylash va tushirish',
+    location: 'Toshkent, Sergeli tumani',
+    date: 'Bugun',
+    time: '09:00 – 18:00',
+    duration: '9 soat',
+    salary: '180 000 so‘m',
+    applicants: '2/5',
+    employer: 'Logistics Group',
+    rating: 4.9
+  },
+  {
+    id: '2',
+    isUrgent: true,
+    title: 'Supermarket uchun kuryer (Piyoda/Velosiped)',
+    location: 'Toshkent, Yunusobod tumani',
+    date: 'Bugun',
+    time: '12:00 – 21:00',
+    duration: '8 soat',
+    salary: '200 000 so‘m',
+    applicants: '4/6',
+    employer: 'Tezkor Dostavka',
+    rating: 4.7
+  }
+];
+
+const regularJobs = [
+  {
+    id: '3',
+    badge: 'YANGI',
+    isUrgent: false,
+    title: 'Ofis binosini generalniy tozalash',
+    location: 'Toshkent, Mirzo Ulug‘bek t.',
+    date: 'Ertalab',
+    time: '08:00 – 15:00',
+    duration: '7 soat',
+    salary: '150 000 so‘m',
+    applicants: '1/3',
+    employer: 'Clean Service',
+    rating: 4.8
+  },
+  {
+    id: '4',
+    badge: 'YANGI',
+    isUrgent: false,
+    title: 'Mehmonxonaga ofitsiant yordamchisi',
+    location: 'Toshkent, Chilonzor t.',
+    date: 'Bugun',
+    time: '16:00 – 23:00',
+    duration: '7 soat',
+    salary: '220 000 so‘m',
+    applicants: '3/4',
+    employer: 'Grand Hotel',
+    rating: 4.9
+  },
+  {
+    id: '5',
+    badge: 'YANGI',
+    isUrgent: false,
+    title: ' Qurilish materiallarini tashish',
+    location: 'Toshkent sh., Shayxontohur t.',
+    date: 'Ertaga',
+    time: '08:00 – 17:00',
+    duration: '9 soat',
+    salary: '250 000 so‘m',
+    applicants: '2/5',
+    employer: 'Stroy Invest',
+    rating: 4.6
+  }
+];
+
+const categories = [
+  { icon: '🏗', name: 'Qurilish', count: 128 },
+  { icon: '🚚', name: 'Yuk tashish', count: 84 },
+  { icon: '🧹', name: 'Tozalash', count: 63 },
+  { icon: '🍽', name: 'Ofitsiant', count: 41 },
+  { icon: '📦', name: 'Ombor', count: 57 },
+  { icon: '🚗', name: 'Haydovchilik', count: 36 },
+];
 
 export default function HomePage() {
-  const [isClicked, setIsClicked] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Tugma bosilganda animatsiya va yengil klik ovozi
-  const handleButtonClick = () => {
-    setIsClicked(true);
-    setTimeout(() => setIsClicked(false), 250);
-
-    // Brauzer orqali klik ovozini chiqarish
-    try {
-      const audioCtx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 0.08);
-    } catch {
-      // Audio qo'llab-quvvatlanmasa xato bermaydi
-    }
-
-    setIsModalOpen(true);
-  };
-
   return (
-    <main style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      background: 'radial-gradient(circle at center, #1a1c29 0%, #0b0c10 100%)',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      padding: '20px',
-      color: '#fff'
-    }}>
-      <div style={{
-        background: 'rgba(255, 255, 255, 0.03)',
-        backdropFilter: 'blur(16px)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        padding: '50px 40px',
-        borderRadius: '30px',
-        boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
-        textAlign: 'center',
-        maxWidth: '480px',
-        width: '100%'
-      }}>
-        <h1 style={{
-          fontSize: '2.5rem',
-          marginBottom: '15px',
-          fontWeight: '800',
-          background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent'
-        }}>
-          1KUNLIK 🚀
-        </h1>
-        <p style={{
-          fontSize: '1rem',
-          color: '#9ca3af',
-          marginBottom: '35px',
-          lineHeight: '1.6'
-        }}>
-          Kunlik va qisqa muddatli ishlarni topish hamda professional darajada ishchi yollash platformasi.
-        </p>
+    <div className="min-h-screen flex flex-col bg-slate-50">
+      {/* Header */}
+      <Header />
 
-        {/* Interaktiv va animatsiyali tugma */}
-        <button
-          onClick={handleButtonClick}
-          style={{
-            background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
-            color: 'white',
-            border: 'none',
-            padding: '16px 32px',
-            fontSize: '1.05rem',
-            fontWeight: '600',
-            borderRadius: '16px',
-            cursor: 'pointer',
-            boxShadow: '0 10px 25px rgba(37, 99, 235, 0.4)',
-            transform: isClicked ? 'scale(0.92)' : 'scale(1)',
-            transition: 'all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-            outline: 'none',
-            width: '100%'
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.transform = 'translateY(-3px)')}
-          onMouseLeave={(e) => (e.currentTarget.style.transform = 'translateY(0)')}
-        >
-          Ro'yxatdan o'tish / Kirish
-        </button>
-      </div>
+      {/* Hero Section */}
+      <Hero />
 
-      {/* Bosganda chiqadigan modal oynacha namunasi */}
-      {isModalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          background: 'rgba(0, 0, 0, 0.7)',
-          backdropFilter: 'blur(5px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            background: '#1f2937',
-            padding: '30px',
-            borderRadius: '20px',
-            width: '90%',
-            maxWidth: '400px',
-            textAlign: 'center',
-            border: '1px solid rgba(255,255,255,0.1)',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)'
-          }}>
-            <h3 style={{ marginBottom: '15px', color: '#fff' }}>Xush kelibsiz!</h3>
-            <p style={{ color: '#9ca3af', marginBottom: '25px', fontSize: '0.95rem' }}>
-              Ro'yxatdan o'tish tizimi tez orada ishga tushadi.
-            </p>
-            <button
-              onClick={() => setIsModalOpen(false)}
-              style={{
-                background: '#374151',
-                color: '#fff',
-                border: 'none',
-                padding: '10px 20px',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                fontWeight: '600'
-              }}
-            >
-              Yopish
-            </button>
+      {/* Urgent Jobs Section */}
+      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+              ⚡ Zudlik bilan ishchi kerak
+            </h2>
+            <p className="text-sm text-slate-500 mt-1">Hozirning o‘zida ish boshlaydigan shoshilinch eʼlonlar</p>
+          </div>
+          <Link href="/jobs?urgent=true" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+            Barchasini ko‘rish &rarr;
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {urgentJobs.map((job) => (
+            <JobCard key={job.id} {...job} />
+          ))}
+        </div>
+      </section>
+
+      {/* Categories Section */}
+      <section className="py-16 bg-white border-y border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+                Ishni yo‘nalish bo‘yicha toping
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">O‘zingizga qiziqarli sohani tanlang</p>
+            </div>
+            <Link href="/categories" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+              Barcha kategoriyalar &rarr;
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {categories.map((cat, idx) => (
+              <CategoryCard key={idx} {...cat} />
+            ))}
           </div>
         </div>
-      )}
-    </main>
+      </section>
+
+      {/* Today's Jobs Section */}
+      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+              Bugungi ishlar lentasi
+            </h2>
+            <p className="text-sm text-slate-500 mt-1">Bugun mavjud bo‘lgan eng yangi imkoniyatlar</p>
+          </div>
+          <Link href="/jobs" className="text-sm font-semibold text-blue-600 hover:text-blue-700">
+            Barchasini ko‘rish &rarr;
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {regularJobs.map((job) => (
+            <JobCard key={job.id} {...job} />
+          ))}
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <HowItWorks />
+
+      {/* Trust Section */}
+      <TrustSection />
+
+      {/* Footer */}
+      <Footer />
+    </div>
   );
 }
