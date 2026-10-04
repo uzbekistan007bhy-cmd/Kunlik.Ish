@@ -68,7 +68,7 @@ interface User {
   phone: string;
   name: string;
   password: string;
-  balance: number;
+  balance: number; // Admin uchun Infinity
   isAdmin?: boolean;
 }
 
@@ -96,10 +96,10 @@ interface PaymentTransaction {
 
 export default function HomePage() {
   // -------------------------------------------------------------
-  // DATABASE IN-MEMORY STATE (Mock DB)
+  // DATABASE IN-MEMORY STATE
   // -------------------------------------------------------------
   const [registeredUsers, setRegisteredUsers] = useState<User[]>([
-    { phone: '+998901234567', name: 'Admin', password: 'Password123', balance: 50000, isAdmin: true },
+    { phone: '+998901234567', name: 'Admin', password: 'Password123', balance: Infinity, isAdmin: true },
     { phone: '+998919876543', name: 'Ali Valiyev', password: 'Userpass1', balance: 15000, isAdmin: false }
   ]);
 
@@ -125,23 +125,13 @@ export default function HomePage() {
       phone: '+998919876543',
       authorPhone: '+998919876543',
       createdAt: 'Kecha, 18:15'
-    },
-    {
-      id: '3',
-      title: 'Meva va sabzavot omboriga yuk ortuvchi',
-      description: 'Meva qutilarini yuk mashinasiga ortish kerak. Og‘irlik 15-20kg.',
-      price: '200 000 so‘m/kun',
-      region: 'Andijon viloyati',
-      district: 'Asaka t.',
-      phone: '+998901234567',
-      authorPhone: '+998901234567',
-      createdAt: '2 kun oldin'
     }
   ]);
 
+  // Admin Sozlamalari
   const [adminCardNumber, setAdminCardNumber] = useState('8600 1234 5678 9012');
   const [adminCardHolder, setAdminCardHolder] = useState('ALIXON VALIYEV');
-  const [jobPostingPrice] = useState(5000); // Har bir e'lon uchun 5 000 so'm
+  const [jobPostingPrice, setJobPostingPrice] = useState(5000); // Admin tomonidan o'zgartiriladigan e'lon narxi
 
   const [transactions, setTransactions] = useState<PaymentTransaction[]>([
     { id: 'TX101', userPhone: '+998919876543', userName: 'Ali Valiyev', amount: 20000, status: 'approved', date: '2026-10-04 12:00', cardLastDigits: '4455' }
@@ -152,20 +142,20 @@ export default function HomePage() {
   // -------------------------------------------------------------
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
-  // Modal control
+  // Modallar
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
-  const [verificationStep, setVerificationStep] = useState(false); // SMS/Telegram Kod bosqichi
+  const [verificationStep, setVerificationStep] = useState(false);
   const [generatedCode, setGeneratedCode] = useState('');
   const [inputCode, setInputCode] = useState('');
 
-  // Form states (Auth)
+  // Form (Auth)
   const [formName, setFormName] = useState('');
   const [formPhone, setFormPhone] = useState('+998');
   const [formPassword, setFormPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Filter states
+  // Filtrlar
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
@@ -175,23 +165,15 @@ export default function HomePage() {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false);
 
-  // New Job Form State
-  const [newJob, setNewJob] = useState({
-    title: '',
-    description: '',
-    price: '',
-    region: '',
-    district: '',
-    phone: ''
-  });
-
-  // Deposit Form State
+  // Forms
+  const [newJob, setNewJob] = useState({ title: '', description: '', price: '', region: '', district: '', phone: '' });
   const [depositAmount, setDepositAmount] = useState('10000');
   const [depositCardLastDigits, setDepositCardLastDigits] = useState('');
 
-  // Admin Edit Card State
+  // Admin Sozlamalari Temp State
   const [tempAdminCard, setTempAdminCard] = useState(adminCardNumber);
   const [tempAdminCardHolder, setTempAdminCardHolder] = useState(adminCardHolder);
+  const [tempJobPrice, setTempJobPrice] = useState(jobPostingPrice.toString());
 
   const currentDistricts = useMemo(() => {
     return UZ_LOCATIONS.find((r) => r.name === selectedRegion)?.districts || [];
@@ -201,15 +183,12 @@ export default function HomePage() {
     return UZ_LOCATIONS.find((r) => r.name === newJob.region)?.districts || [];
   }, [newJob.region]);
 
-  // -------------------------------------------------------------
-  // E'LONLARNI FILTRLASH LOGIKASI
-  // -------------------------------------------------------------
+  // E'lonlarni filtrlash
   const filteredJobs = useMemo(() => {
     return jobs.filter((job) => {
       const matchQuery =
         job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         job.description.toLowerCase().includes(searchQuery.toLowerCase());
-
       const matchRegion = selectedRegion ? job.region === selectedRegion : true;
       const matchDistrict = selectedDistrict ? job.district === selectedDistrict : true;
 
@@ -218,31 +197,26 @@ export default function HomePage() {
   }, [jobs, searchQuery, selectedRegion, selectedDistrict]);
 
   // -------------------------------------------------------------
-  // AUTH (KIRISH, RO'YXATDAN O'TISH, VERIFIKATSIYA)
+  // AUTH LOGIC
   // -------------------------------------------------------------
   const handleAuthSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
     if (authMode === 'login') {
-      // TIZIMGA KIRISH
       const user = registeredUsers.find((u) => u.phone === formPhone.trim());
-
       if (!user) {
         setErrorMsg("Bunday telefon raqam ro'yxatdan o'tmagan!");
         return;
       }
-
       if (user.password !== formPassword) {
         setErrorMsg("Parol noto'g'ri kiritildi!");
         return;
       }
-
       setCurrentUser(user);
       setIsAuthOpen(false);
       resetAuthForms();
     } else {
-      // RO'YXATDAN O'TISH - SMS/TELEGRAM KOD SUBMIT BOSQICHI
       if (!verificationStep) {
         if (/\d/.test(formName)) {
           setErrorMsg("Ismingizda raqamlar bo'lishi mumkin emas!");
@@ -252,19 +226,16 @@ export default function HomePage() {
           setErrorMsg("Ism kamida 2 ta harfdan iborat bo'lishi kerak!");
           return;
         }
-
         const digitsOnly = formPhone.replace(/\D/g, '');
         if (digitsOnly.length !== 12) {
           setErrorMsg("Telefon raqami to'liq emas! (+998XXXXXXXXX)");
           return;
         }
-
         const existingUser = registeredUsers.find((u) => u.phone === formPhone.trim());
         if (existingUser) {
-          setErrorMsg("Ushbu telefon raqami allaqachon ro'yxatdan o'tgan! Kirish bo'limiga o'ting.");
+          setErrorMsg("Ushbu telefon raqami allaqachon ro'yxatdan o'tgan!");
           return;
         }
-
         if (formPassword.length < 8) {
           setErrorMsg("Parol kamida 8 ta belgidan iborat bo'lishi kerak!");
           return;
@@ -274,12 +245,10 @@ export default function HomePage() {
           return;
         }
 
-        // SMS/Telegram Kod yaratish (Simulyatsiya)
         const code = Math.floor(1000 + Math.random() * 9000).toString();
         setGeneratedCode(code);
         setVerificationStep(true);
       } else {
-        // KODNI TEKSHIRISH
         if (inputCode !== generatedCode) {
           setErrorMsg("Tasdiqlash kodi noto'g'ri!");
           return;
@@ -312,7 +281,7 @@ export default function HomePage() {
   };
 
   // -------------------------------------------------------------
-  // E'LON JOYLASH (PULLIK)
+  // E'LON JOYLASH (PULLIK VA ADMIN UCHUN CHEKSIZ)
   // -------------------------------------------------------------
   const handlePostJob = (e: React.FormEvent) => {
     e.preventDefault();
@@ -321,25 +290,26 @@ export default function HomePage() {
       return;
     }
 
-    if (currentUser.balance < jobPostingPrice) {
-      alert(`Hisobingizda mablag' yetarli emas! E'lon joylash narxi: ${jobPostingPrice.toLocaleString()} so'm. Iltimos, hisobingizni to'ldiring.`);
+    // Admin bo'lmasa balansi tekshiriladi
+    if (!currentUser.isAdmin && currentUser.balance < jobPostingPrice) {
+      alert(`Hisobingizda yetarli mablag' yo'q! Hozirgi e'lon joylash narxi: ${jobPostingPrice.toLocaleString()} so'm.`);
       setIsDepositOpen(true);
       return;
     }
 
-    // Hisobdan yechish
-    const updatedUsers = registeredUsers.map((u) => {
-      if (u.phone === currentUser.phone) {
-        return { ...u, balance: u.balance - jobPostingPrice };
-      }
-      return u;
-    });
+    // Agar oddiy foydalanuvchi bo'lsa, balansidan yechiladi
+    if (!currentUser.isAdmin) {
+      const updatedUsers = registeredUsers.map((u) => {
+        if (u.phone === currentUser.phone) {
+          return { ...u, balance: u.balance - jobPostingPrice };
+        }
+        return u;
+      });
+      setRegisteredUsers(updatedUsers);
+      const updatedCurrent = updatedUsers.find((u) => u.phone === currentUser.phone) || null;
+      setCurrentUser(updatedCurrent);
+    }
 
-    setRegisteredUsers(updatedUsers);
-    const updatedCurrent = updatedUsers.find((u) => u.phone === currentUser.phone) || null;
-    setCurrentUser(updatedCurrent);
-
-    // Yangi e'lon qo'shish
     const createdJob: Job = {
       id: Date.now().toString(),
       title: newJob.title,
@@ -399,11 +369,9 @@ export default function HomePage() {
     const tx = transactions.find((t) => t.id === txId);
     if (!tx || tx.status !== 'pending') return;
 
-    // Tranzaksiya holatini o'zgartirish
-    const updatedTx = transactions.map((t) => (t.id === txId ? { ...t, status: 'approved' as const } : t));
-    setTransactions(updatedTx);
+    setTransactions(transactions.map((t) => (t.id === txId ? { ...t, status: 'approved' as const } : t)));
 
-    // Foydalanuvchi balansiga qo'shish
+    // Foydalanuvchiga pul qo'shiladi
     const updatedUsers = registeredUsers.map((u) => {
       if (u.phone === tx.userPhone) {
         return { ...u, balance: u.balance + tx.amount };
@@ -422,16 +390,22 @@ export default function HomePage() {
     setTransactions(transactions.map((t) => (t.id === txId ? { ...t, status: 'rejected' as const } : t)));
   };
 
-  const handleSaveAdminCard = () => {
+  const handleSaveAdminSettings = () => {
+    const parsedPrice = parseInt(tempJobPrice);
+    if (isNaN(parsedPrice) || parsedPrice < 0) {
+      alert("E'lon narxini to'g'ri kiriting!");
+      return;
+    }
     setAdminCardNumber(tempAdminCard);
     setAdminCardHolder(tempAdminCardHolder);
-    alert("Admin karta ma'lumotlari yangilandi!");
+    setJobPostingPrice(parsedPrice);
+    alert("Admin sozlamalari muvaffaqiyatli saqlandi!");
   };
 
   return (
     <div className="min-h-screen bg-[#0b0e17] text-white flex flex-col font-sans">
       {/* -------------------------------------------------------------
-          HEADER (SHAPKA)
+          HEADER
       ------------------------------------------------------------- */}
       <header className="sticky top-0 z-40 bg-[#0b0e17]/90 backdrop-blur-md border-b border-slate-800">
         <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
@@ -452,7 +426,7 @@ export default function HomePage() {
             </button>
           </div>
 
-          {/* QIDIRUV VA FILTRLAR */}
+          {/* FILTRLAR */}
           <div className="flex-1 max-w-xl flex items-center gap-2 bg-[#121624] border border-slate-700/60 p-1.5 rounded-2xl">
             <input
               type="text"
@@ -461,9 +435,7 @@ export default function HomePage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-1/3 bg-transparent text-xs text-white px-2 py-1 outline-none placeholder-slate-500"
             />
-
             <div className="w-[1px] h-5 bg-slate-700"></div>
-
             <select
               value={selectedRegion}
               onChange={(e) => {
@@ -479,9 +451,7 @@ export default function HomePage() {
                 </option>
               ))}
             </select>
-
             <div className="w-[1px] h-5 bg-slate-700"></div>
-
             <select
               value={selectedDistrict}
               onChange={(e) => setSelectedDistrict(e.target.value)}
@@ -497,7 +467,7 @@ export default function HomePage() {
             </select>
           </div>
 
-          {/* PROFIL / LOGIN / ADMIN TUGMALARI */}
+          {/* PROFIL / ADMIN PANEL */}
           <div className="flex items-center gap-3">
             {currentUser?.isAdmin && (
               <button
@@ -511,13 +481,17 @@ export default function HomePage() {
             {currentUser ? (
               <div className="flex items-center gap-3">
                 <div
-                  onClick={() => setIsDepositOpen(true)}
+                  onClick={() => !currentUser.isAdmin && setIsDepositOpen(true)}
                   className="cursor-pointer bg-[#161b2e] border border-blue-500/40 hover:border-blue-500 px-3 py-1.5 rounded-2xl flex items-center gap-2 transition"
-                  title="Hisobni to'ldirish uchun bosing"
+                  title={currentUser.isAdmin ? "Admin Balansi Cheksiz" : "Hisobni to'ldirish"}
                 >
                   <span className="text-xs text-slate-400">Balans:</span>
-                  <span className="text-xs font-black text-green-400">{currentUser.balance.toLocaleString()} so'm</span>
-                  <span className="bg-blue-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">+</span>
+                  <span className="text-xs font-black text-green-400">
+                    {currentUser.isAdmin ? '∞ Cheksiz' : `${currentUser.balance.toLocaleString()} so'm`}
+                  </span>
+                  {!currentUser.isAdmin && (
+                    <span className="bg-blue-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">+</span>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2 bg-[#161b2e] border border-slate-700/80 px-3 py-1.5 rounded-2xl">
@@ -531,7 +505,6 @@ export default function HomePage() {
                   <button
                     onClick={() => setCurrentUser(null)}
                     className="text-slate-400 hover:text-red-400 text-xs ml-1 transition"
-                    title="Chiqish"
                   >
                     ✕
                   </button>
@@ -553,11 +526,9 @@ export default function HomePage() {
       </header>
 
       {/* -------------------------------------------------------------
-          MAIN CONTENT (E'LONLAR RO'YXATI)
+          MAIN CONTENT
       ------------------------------------------------------------- */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
-        
-        {/* Banner */}
         <div className="mb-8 p-6 rounded-3xl bg-gradient-to-r from-blue-900/40 via-indigo-900/30 to-[#121624] border border-blue-500/20 flex flex-col md:flex-row items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-white mb-2">
@@ -576,12 +547,11 @@ export default function HomePage() {
               }}
               className="text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-2 rounded-xl text-slate-300 transition"
             >
-              🔄 Filtrlarni tozash
+              🔄 Filtrlarni tozalash
             </button>
           )}
         </div>
 
-        {/* E'lonlar gridi yoki Bosh holat */}
         {filteredJobs.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {filteredJobs.map((job) => (
@@ -596,7 +566,6 @@ export default function HomePage() {
                     </span>
                     <span className="text-[10px] text-slate-500">{job.createdAt}</span>
                   </div>
-
                   <h3 className="text-base font-bold text-white mb-2 line-clamp-2">{job.title}</h3>
                   <p className="text-slate-400 text-xs mb-4 line-clamp-3 leading-relaxed">{job.description}</p>
                 </div>
@@ -606,7 +575,6 @@ export default function HomePage() {
                     <span className="text-[10px] uppercase font-bold text-slate-500 block">Ish haqi</span>
                     <span className="text-sm font-black text-green-400">{job.price}</span>
                   </div>
-
                   <a
                     href={`tel:${job.phone}`}
                     className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5"
@@ -618,7 +586,6 @@ export default function HomePage() {
             ))}
           </div>
         ) : (
-          /* FILTR BO'YICHA ISH TOPILMAGANDAGI CHIROYLI HOLAT */
           <div className="py-20 text-center bg-[#121624]/60 border border-slate-800/80 rounded-3xl p-8 max-w-xl mx-auto">
             <div className="w-16 h-16 mx-auto mb-4 bg-slate-800/60 rounded-full flex items-center justify-center text-3xl">
               🔍
@@ -642,7 +609,7 @@ export default function HomePage() {
       </main>
 
       {/* -------------------------------------------------------------
-          AUTH MODAL (KIRISH, RO'YXATDAN O'TISH, KOD TA'SDIRLASH)
+          AUTH MODAL
       ------------------------------------------------------------- */}
       {isAuthOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
@@ -658,16 +625,10 @@ export default function HomePage() {
             </button>
 
             <h2 className="text-2xl font-black text-white text-center mb-1">
-              {verificationStep
-                ? 'Tasdiqlash kodi 📲'
-                : authMode === 'register'
-                ? 'Ro‘yxatdan o‘tish 🚀'
-                : 'Tizimga kirish 🔑'}
+              {verificationStep ? 'Tasdiqlash kodi 📲' : authMode === 'register' ? 'Ro‘yxatdan o‘tish 🚀' : 'Tizimga kirish 🔑'}
             </h2>
             <p className="text-slate-400 text-xs text-center mb-6">
-              {verificationStep
-                ? `${formPhone} raqamiga yuborilgan 4 xonali kodni kiriting`
-                : "Ma'lumotlaringizni kiriting"}
+              {verificationStep ? `${formPhone} raqamiga yuborilgan 4 xonali kodni kiriting` : "Ma'lumotlaringizni kiriting"}
             </p>
 
             {errorMsg && (
@@ -677,16 +638,12 @@ export default function HomePage() {
             )}
 
             <form onSubmit={handleAuthSubmit} className="space-y-4">
-              {/* KODNI TASDIQLASH BOSQICHI */}
               {verificationStep ? (
                 <div>
                   <div className="mb-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl text-center">
-                    <p className="text-[11px] text-blue-300 font-semibold mb-1">
-                      [SIMULYATSIYA] SMS/Telegram orqali yuborilgan kod:
-                    </p>
+                    <p className="text-[11px] text-blue-300 font-semibold mb-1">[SIMULYATSIYA] Kod:</p>
                     <span className="text-xl font-black tracking-widest text-white">{generatedCode}</span>
                   </div>
-                  <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">4 Xonali Kod</label>
                   <input
                     type="text"
                     maxLength={4}
@@ -699,12 +656,9 @@ export default function HomePage() {
                 </div>
               ) : (
                 <>
-                  {/* ISM (RO'YXATDAN O'TISHDA) */}
                   {authMode === 'register' && (
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
-                        Ismingiz <span className="text-red-400">(Faqat harflar)</span>
-                      </label>
+                      <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Ismingiz</label>
                       <input
                         type="text"
                         required
@@ -719,11 +673,8 @@ export default function HomePage() {
                     </div>
                   )}
 
-                  {/* TELEFON RAQAM */}
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
-                      Telefon raqamingiz
-                    </label>
+                    <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Telefon raqam</label>
                     <input
                       type="text"
                       required
@@ -737,11 +688,8 @@ export default function HomePage() {
                     />
                   </div>
 
-                  {/* PAROL */}
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
-                      Parolingiz {authMode === 'register' && <span className="text-red-400">(Min 8 belgi, 1 Katta harf)</span>}
-                    </label>
+                    <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Parol</label>
                     <input
                       type="password"
                       required
@@ -761,11 +709,7 @@ export default function HomePage() {
                 type="submit"
                 className="w-full py-3.5 mt-2 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm transition shadow-lg shadow-blue-600/30"
               >
-                {verificationStep
-                  ? 'Tasdiqlash va Kirish'
-                  : authMode === 'register'
-                  ? 'Kodni Yuborish 📲'
-                  : 'Kirish'}
+                {verificationStep ? 'Tasdiqlash va Kirish' : authMode === 'register' ? 'Kodni Yuborish 📲' : 'Kirish'}
               </button>
             </form>
 
@@ -779,9 +723,7 @@ export default function HomePage() {
                   }}
                   className="text-xs text-slate-400 hover:text-blue-400 transition"
                 >
-                  {authMode === 'register'
-                    ? 'Akkauntingiz bormi? Kirish'
-                    : "Akkauntingiz yo'qmi? Ro'yxatdan o'tish"}
+                  {authMode === 'register' ? 'Akkauntingiz bormi? Kirish' : "Akkauntingiz yo'qmi? Ro'yxatdan o'tish"}
                 </button>
               </div>
             )}
@@ -804,12 +746,12 @@ export default function HomePage() {
 
             <h2 className="text-xl font-black text-white text-center mb-1">Yangi ish e'lonini joylash 📢</h2>
             <p className="text-slate-400 text-xs text-center mb-6">
-              E'lon joylash narxi: <span className="text-green-400 font-bold">{jobPostingPrice.toLocaleString()} so'm</span> (Hisobingizdan yechiladi)
+              E'lon joylash narxi: <span className="text-green-400 font-bold">{currentUser?.isAdmin ? "BEPUL (Admin)" : `${jobPostingPrice.toLocaleString()} so'm`}</span>
             </p>
 
             <form onSubmit={handlePostJob} className="space-y-4">
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">E'lon sarlavhasi</label>
+                <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Sarlavha</label>
                 <input
                   type="text"
                   required
@@ -821,11 +763,11 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Batafsil tavsif</label>
+                <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Tavsif</label>
                 <textarea
                   rows={3}
                   required
-                  placeholder="Ish vaqti, vazifasi, talablar va qo'shimcha sharoitlar..."
+                  placeholder="Ish vaqti, vazifasi va sharoitlar..."
                   value={newJob.description}
                   onChange={(e) => setNewJob({ ...newJob, description: e.target.value })}
                   className="w-full bg-[#1a2035] border border-slate-700/60 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
@@ -851,7 +793,7 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Tuman/Shahar</label>
+                  <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Tuman</label>
                   <select
                     required
                     disabled={!newJob.region}
@@ -883,7 +825,7 @@ export default function HomePage() {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Aloqa telefoni</label>
+                  <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Telefon</label>
                   <input
                     type="text"
                     required
@@ -899,7 +841,7 @@ export default function HomePage() {
                 type="submit"
                 className="w-full py-3.5 mt-2 rounded-2xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm transition shadow-lg shadow-blue-600/30"
               >
-                E'lonni Chop Etish ({jobPostingPrice.toLocaleString()} so'm)
+                E'lonni Chop Etish
               </button>
             </form>
           </div>
@@ -907,7 +849,7 @@ export default function HomePage() {
       )}
 
       {/* -------------------------------------------------------------
-          HISOBNI TO'LDIRISH MODALI (ADMIN KARTASI VA ELEKTRON TO'LOV)
+          HISOBNI TO'LDIRISH MODALI
       ------------------------------------------------------------- */}
       {isDepositOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
@@ -922,9 +864,7 @@ export default function HomePage() {
             <h2 className="text-xl font-black text-white text-center mb-1">Hisobni to'ldirish 💳</h2>
             <p className="text-slate-400 text-xs text-center mb-6">Admin kartasiga o'tkazma qiling</p>
 
-            {/* ADMIN KARTA KARTOCKASI */}
             <div className="mb-6 p-4 rounded-2xl bg-gradient-to-tr from-blue-700 to-indigo-600 border border-blue-400/30 text-white shadow-xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10 text-6xl font-black">CARD</div>
               <p className="text-[10px] font-bold text-blue-200 uppercase mb-2">Rasmiy Admin Kartasi</p>
               <p className="text-lg font-black tracking-widest mb-3 font-mono">{adminCardNumber}</p>
               <p className="text-xs font-semibold text-blue-100">{adminCardHolder}</p>
@@ -945,9 +885,7 @@ export default function HomePage() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
-                  Sizning kartangiz oxirgi 4 xonasi
-                </label>
+                <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Kartangiz oxirgi 4 xonasi</label>
                 <input
                   type="text"
                   maxLength={4}
@@ -957,10 +895,6 @@ export default function HomePage() {
                   onChange={(e) => setDepositCardLastDigits(e.target.value)}
                   className="w-full bg-[#1a2035] border border-slate-700/60 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-mono tracking-widest"
                 />
-              </div>
-
-              <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl text-[11px] text-yellow-300">
-                📌 Yuqoridagi karta raqamiga pul o'tkazib, ma'lumotlarni yuboring. Admin to'lovni tasdiqlagach, pul avtomatik hisobingizga o'tadi.
               </div>
 
               <button
@@ -975,7 +909,7 @@ export default function HomePage() {
       )}
 
       {/* -------------------------------------------------------------
-          ADMIN PANEL MODALI (FAQAT ADMIN FOYDALANUVCHIGA KO'RINADI)
+          ADMIN PANEL MODALI (FAQAT ADMIN)
       ------------------------------------------------------------- */}
       {isAdminPanelOpen && currentUser?.isAdmin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
@@ -988,58 +922,70 @@ export default function HomePage() {
             </button>
 
             <h2 className="text-2xl font-black text-white text-center mb-1">🛠 Admin Boshqaruv Paneli</h2>
-            <p className="text-slate-400 text-xs text-center mb-6">Sayt sozlamalari va to'lovlar statistikasi</p>
+            <p className="text-slate-400 text-xs text-center mb-6">Sayt narxlari, kartasi va statistikasi</p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              {/* ADMIN KARTANI TAHRIRLASH */}
-              <div className="bg-[#1a2035] border border-slate-700/60 p-4 rounded-2xl md:col-span-1">
-                <h3 className="text-sm font-bold text-white mb-3">💳 Admin Karta Sozlamalari</h3>
+              {/* SOZLAMALAR: KARTA VA E'LON NARXI */}
+              <div className="bg-[#1a2035] border border-slate-700/60 p-4 rounded-2xl md:col-span-1 space-y-3">
+                <h3 className="text-sm font-bold text-white mb-2">⚙️ Sayt Sozlamalari</h3>
                 
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 mb-1">Karta raqami</label>
-                    <input
-                      type="text"
-                      value={tempAdminCard}
-                      onChange={(e) => setTempAdminCard(e.target.value)}
-                      className="w-full bg-[#121624] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold text-slate-400 mb-1">Karta egasi ismi</label>
-                    <input
-                      type="text"
-                      value={tempAdminCardHolder}
-                      onChange={(e) => setTempAdminCardHolder(e.target.value)}
-                      className="w-full bg-[#121624] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
-                    />
-                  </div>
-
-                  <button
-                    onClick={handleSaveAdminCard}
-                    className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition"
-                  >
-                    Saqlash
-                  </button>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 mb-1">Admin Karta Raqami</label>
+                  <input
+                    type="text"
+                    value={tempAdminCard}
+                    onChange={(e) => setTempAdminCard(e.target.value)}
+                    className="w-full bg-[#121624] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono"
+                  />
                 </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 mb-1">Karta Egasi</label>
+                  <input
+                    type="text"
+                    value={tempAdminCardHolder}
+                    onChange={(e) => setTempAdminCardHolder(e.target.value)}
+                    className="w-full bg-[#121624] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-400 mb-1">E'lon Narxi (so'm)</label>
+                  <input
+                    type="number"
+                    value={tempJobPrice}
+                    onChange={(e) => setTempJobPrice(e.target.value)}
+                    className="w-full bg-[#121624] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-bold"
+                  />
+                </div>
+
+                <button
+                  onClick={handleSaveAdminSettings}
+                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition"
+                >
+                  Sozlamalarni Saqlash
+                </button>
               </div>
 
               {/* STATISTIKA */}
               <div className="bg-[#1a2035] border border-slate-700/60 p-4 rounded-2xl md:col-span-2 flex flex-col justify-between">
-                <h3 className="text-sm font-bold text-white mb-3">📊 Umumiy Statistika</h3>
-                <div className="grid grid-cols-3 gap-3 text-center">
+                <h3 className="text-sm font-bold text-white mb-3">📊 Moliyaviy va Sayt Statistika</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                   <div className="p-3 bg-[#121624] rounded-xl">
                     <span className="text-[10px] text-slate-400 font-bold block">Foydalanuvchilar</span>
-                    <span className="text-lg font-black text-white">{registeredUsers.length}</span>
+                    <span className="text-base font-black text-white">{registeredUsers.length}</span>
                   </div>
                   <div className="p-3 bg-[#121624] rounded-xl">
-                    <span className="text-[10px] text-slate-400 font-bold block">Jami E'lonlar</span>
-                    <span className="text-lg font-black text-blue-400">{jobs.length}</span>
+                    <span className="text-[10px] text-slate-400 font-bold block">E'lonlar</span>
+                    <span className="text-base font-black text-blue-400">{jobs.length}</span>
                   </div>
                   <div className="p-3 bg-[#121624] rounded-xl">
-                    <span className="text-[10px] text-slate-400 font-bold block">Tasdiqlangan to'lovlar</span>
-                    <span className="text-lg font-black text-green-400">
+                    <span className="text-[10px] text-slate-400 font-bold block">Admin Balansi</span>
+                    <span className="text-base font-black text-green-400">∞ Cheksiz</span>
+                  </div>
+                  <div className="p-3 bg-[#121624] rounded-xl">
+                    <span className="text-[10px] text-slate-400 font-bold block">Jami To'lovlar</span>
+                    <span className="text-base font-black text-yellow-400">
                       {transactions.filter((t) => t.status === 'approved').reduce((acc, curr) => acc + curr.amount, 0).toLocaleString()} so'm
                     </span>
                   </div>
@@ -1047,7 +993,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* TO'LOVLAR TARIXI VA TASDIQLASH */}
+            {/* TO'LOVLAR RO'YXATI */}
             <div>
               <h3 className="text-base font-bold text-white mb-3">📋 To'lov so'rovlari va operatsiyalar</h3>
               <div className="overflow-x-auto">
