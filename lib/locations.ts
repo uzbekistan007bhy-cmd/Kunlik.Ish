@@ -10,15 +10,15 @@ export const UZ_LOCATIONS: Region[] = [
   },
   {
     name: 'Toshkent viloyati',
-    districts: ['Olmaliq sh.', 'Angren sh.', 'Chirchiq sh.', 'Yangiyo‘l sh.', 'Oqqurg‘on t.', 'Olmaliq t.', 'Bo‘stonliq t.', 'Bo‘ka t.', 'Zangiota t.', 'Qibray t.', 'Parkent t.', 'Pskent t.', 'Toshkent t.', 'Chinoz t.', 'Yuqorichirchiq t.', 'Yangiyo‘l t.'],
+    districts: ['Olmaliq sh.', 'Angren sh.', 'Chirchiq sh.', 'Yangiyo‘l sh.', 'Oqqurg‘on t.', 'Bo‘stonliq t.', 'Bo‘ka t.', 'Zangiota t.', 'Qibray t.', 'Parkent t.', 'Pskent t.', 'Toshkent t.', 'Chinoz t.', 'Yuqorichirchiq t.', 'Yangiyo‘l t.'],
   },
   {
     name: 'Samarqand viloyati',
-    districts: ['Samarqand sh.', 'Kattaqo‘rg‘on sh.', 'Bulung‘ur t.', 'Jomboy t.', 'Ishtixon t.', 'Kattaqo‘rg‘on t.', 'Qarshi t.', 'Narpay t.', 'Nurobod t.', 'Oqdaryo t.', 'Paxtachi t.', 'Payariq t.', 'Pastdarg‘om t.', 'Samarqand t.', 'Toyloq t.'],
+    districts: ['Samarqand sh.', 'Kattaqo‘rg‘on sh.', 'Bulung‘ur t.', 'Jomboy t.', 'Ishtixon t.', 'Kattaqo‘rg‘on t.', 'Narpay t.', 'Nurobod t.', 'Oqdaryo t.', 'Paxtachi t.', 'Payariq t.', 'Pastdarg‘om t.', 'Samarqand t.', 'Toyloq t.'],
   },
   {
     name: 'Andijon viloyati',
-    districts: ['Andijon sh.', 'Xonobod sh.', 'Andijon t.', 'Asaka t.', 'Baliqchi t.', 'Buloqboshi t.', 'Bo‘ston t.', 'Buloqboshi t.', 'Jalaquduq t.', 'Izboskan t.', 'Marhamat t.', 'Paxtaobod t.', 'Buloqboshi t.', 'Ulug‘nor t.', 'Xo‘jaobod t.', 'Shahrixon t.'],
+    districts: ['Andijon sh.', 'Xonobod sh.', 'Andijon t.', 'Asaka t.', 'Baliqchi t.', 'Buloqboshi t.', 'Bo‘ston t.', 'Jalaquduq t.', 'Izboskan t.', 'Marhamat t.', 'Paxtaobod t.', 'Ulug‘nor t.', 'Xo‘jaobod t.', 'Shahrixon t.'],
   },
   {
     name: 'Farg‘ona viloyati',
@@ -34,11 +34,11 @@ export const UZ_LOCATIONS: Region[] = [
   },
   {
     name: 'Xorazm viloyati',
-    districts: ['Urganch sh.', 'Xiva sh.', 'Bog‘ot t.', 'Gurlan t.', 'Qushko‘pir t.', 'Shovot t.', 'TUPRAQQAL’A t.', 'Urganch t.', 'Xazorasp t.', 'Xonqa t.', 'Xiva t.', 'Yangiariq t.', 'Yangibozor t.'],
+    districts: ['Urganch sh.', 'Xiva sh.', 'Bog‘ot t.', 'Gurlan t.', 'Qushko‘pir t.', 'Shovot t.', 'Tuproqqal’a t.', 'Urganch t.', 'Xazorasp t.', 'Xonqa t.', 'Xiva t.', 'Yangiariq t.', 'Yangibozor t.'],
   },
   {
     name: 'Qashqadaryo viloyati',
-    districts: ['Qarshi sh.', 'Shahrisabz sh.', 'Dehqonobod t.', 'Kasbi t.', 'Kitob t.', 'Koson t.', 'Mirishkor t.', 'Muborak t.', 'Nishon t.', 'Kasbi t.', 'Qarshi t.', 'Chiroqchi t.', 'Shahrisabz t.', 'Yakkabog‘t.', 'Ko‘kdala t.'],
+    districts: ['Qarshi sh.', 'Shahrisabz sh.', 'Dehqonobod t.', 'Kasbi t.', 'Kitob t.', 'Koson t.', 'Mirishkor t.', 'Muborak t.', 'Nishon t.', 'Qarshi t.', 'Chiroqchi t.', 'Shahrisabz t.', 'Yakkabog‘ t.', 'Ko‘kdala t.'],
   },
   {
     name: 'Surxondaryo viloyati',
