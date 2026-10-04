@@ -16,55 +16,66 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
 
   if (!isOpen) return null;
 
-  // Ism kiritish (Raqam kiritishni umuman o'tkazmaydi)
-  const handleNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    // Faqat harflar va bo'sh joyga ruxsat
-    if (/^[a-zA-Z'’`ʻа-яА-Я\s]*$/.test(val)) {
-      setName(val);
-      setErrorMsg('');
-    }
+  // 1. ISM: Raqam va maxsus belgilarni klaviaturadan bosganda ham UMMAN kirgizmaydi
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Faqat lotin va krill harflari hamda bo'sh joy
+    const filteredValue = value.replace(/[^a-zA-Z'’`ʻа-яА-Я\s]/g, '');
+    setName(filteredValue);
+    setErrorMsg('');
   };
 
-  // Telefon kiritish (Faqat raqamlar va + ishorasi)
-  const handlePhoneInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    if (/^\+?[0-9\s]*$/.test(val)) {
-      setPhone(val);
-      setErrorMsg('');
+  // 2. TELEFON: Harf va ortiqcha belgilarni UMMAN kirgizmaydi (faqat raqam va +)
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Faqat + va raqamlar
+    const filteredValue = value.replace(/[^0-9+]/g, '');
+    
+    // Har doim +998 bilan boshlanishini ta'minlash
+    if (!filteredValue.startsWith('+998')) {
+      setPhone('+998 ');
+    } else {
+      setPhone(filteredValue);
     }
+    setErrorMsg('');
   };
 
-  // Forma yuborilayotganda qat'iy tekshirish
-  const handleSubmit = (e: React.FormEvent) => {
+  // 3. FORMA YUBORILGANDA QAT'IY TEKSHIRUV
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    e.stopPropagation(); // Brauzer standart alertlarini to'xtatish
     setErrorMsg('');
 
-    // 1. Ism tekshiruvi (Kamida 2 ta harf)
-    if (name.trim().length < 2) {
-      setErrorMsg("Ismingizni to'liq kiritishingiz shart (raqam ishlatib bo'lmaydi)!");
+    // --- ISM TEKSHIRUVI ---
+    const cleanName = name.trim();
+    if (cleanName.length < 2) {
+      setErrorMsg("Ismingizni to'liq kiriting (kamida 2 ta harf)!");
+      return;
+    }
+    if (/\d/.test(cleanName)) {
+      setErrorMsg("Ismda raqam ishlatish mumkin emas!");
       return;
     }
 
-    // 2. Telefon raqam tekshiruvi (+998 va kamida 9 ta raqam)
-    const cleanPhone = phone.replace(/\D/g, ''); // Faqat raqamlarni ajratib olish
-    if (cleanPhone.length < 12) {
-      setErrorMsg("Telefon raqamini to'liq kiriting (masalan: +998 90 123 45 67)!");
+    // --- TELEFON TEKSHIRUVI ---
+    const rawDigits = phone.replace(/\D/g, ''); // Faqat raqamlar
+    if (rawDigits.length !== 12) {
+      setErrorMsg("Telefon raqami to'liq kiritilmadi (+998 va 9 ta raqam bo'lishi shart)!");
       return;
     }
 
-    // 3. Parol tekshiruvi (Kamida 8 belgi hamda 1 ta KATTA harf)
+    // --- PAROL TEKSHIRUVI ---
     if (password.length < 8) {
       setErrorMsg("Parol kamida 8 ta belgidan iborat bo'lishi kerak!");
       return;
     }
     if (!/[A-Z]/.test(password)) {
-      setErrorMsg("Parolda kamida 1 ta katta harf (masalan: A, B, C...) bo'lishi shart!");
+      setErrorMsg("Parolda kamida 1 ta KATTA harf (A-Z) bo'lishi shart!");
       return;
     }
 
-    // Barcha shartlar bajarilganda:
-    onSuccess({ name, phone });
+    // Agar barcha shartlar bajarilsa:
+    onSuccess({ name: cleanName, phone: phone.trim() });
     onClose();
   };
 
@@ -72,6 +83,7 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
       <div className="bg-[#121624] border border-slate-800 rounded-3xl p-6 sm:p-8 w-full max-w-md shadow-2xl relative">
         <button
+          type="button"
           onClick={onClose}
           className="absolute top-4 right-4 text-slate-400 hover:text-white text-xl font-bold transition"
         >
@@ -79,37 +91,41 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
         </button>
 
         <h2 className="text-2xl font-black text-white text-center mb-1">Ro‘yxatdan o‘tish 🚀</h2>
-        <p className="text-slate-400 text-xs text-center mb-6">Ma'lumotlaringizni to'g'ri shaklda kiriting</p>
+        <p className="text-slate-400 text-xs text-center mb-6">Ma'lumotlarni to'g'ri shaklda kiriting</p>
 
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-semibold text-center">
-            {errorMsg}
+          <div className="mb-4 p-3 rounded-xl bg-red-500/20 border border-red-500/50 text-red-300 text-xs font-bold text-center animate-pulse">
+            ⚠️ {errorMsg}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* ISMINGIZ */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Ismingiz (Faqat harflar)</label>
+            <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
+              Ismingiz <span className="text-red-400">(Faqat harflar)</span>
+            </label>
             <input
               type="text"
               required
-              placeholder="Ali Valiyev"
+              placeholder="Masalan: Ali Valiyev"
               value={name}
-              onChange={handleNameInput}
+              onChange={handleNameChange}
               className="w-full bg-[#1a2035] border border-slate-700/60 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
             />
           </div>
 
           {/* TELEFON RAQAMINGIZ */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">Telefon raqamingiz (Faqat raqamlar)</label>
+            <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
+              Telefon raqamingiz <span className="text-red-400">(Faqat raqam)</span>
+            </label>
             <input
               type="text"
               required
               placeholder="+998 90 123 45 67"
               value={phone}
-              onChange={handlePhoneInput}
+              onChange={handlePhoneChange}
               className="w-full bg-[#1a2035] border border-slate-700/60 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
             />
           </div>
@@ -117,14 +133,17 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
           {/* PAROL */}
           <div>
             <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
-              Parol (Min: 8 belgi + 1 Katta harf)
+              Parol <span className="text-red-400">(Min 8 belgi va 1 Katta harf)</span>
             </label>
             <input
               type="password"
               required
               placeholder="••••••••"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setErrorMsg('');
+              }}
               className="w-full bg-[#1a2035] border border-slate-700/60 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500"
             />
           </div>
