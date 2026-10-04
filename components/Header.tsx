@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import AuthModal from './AuthModal';
-import { UZ_LOCATIONS } from '@/lib/locations';
+import { UZ_LOCATIONS } from '../lib/locations';
 
 export default function Header() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
